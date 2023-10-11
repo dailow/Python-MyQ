@@ -23,6 +23,8 @@ from .const import (
     OAUTH_CLIENT_ID,
     OAUTH_REDIRECT_URI,
     OAUTH_TOKEN_URI,
+    OAUTH_LOGIN_URI,
+    OAUTH_REQUIRED_HEADERS
 )
 from .device import MyQDevice
 from .errors import (
@@ -382,6 +384,9 @@ class API:  # pylint: disable=too-many-instance-attributes
                 if field.get("name") == "__RequestVerificationToken":
                     data.update({"__RequestVerificationToken": field.get("value") })
                     have_verification_token = True
+                
+                # append required headers.  See https://github.com/home-assistant/core/issues/101763
+                data.update(OAUTH_REQUIRED_HEADERS)
 
                 # Confirm we found email, password, and submit in the form to be submitted
                 if have_email and have_password and have_submit and have_verification_token:
@@ -404,7 +409,7 @@ class API:  # pylint: disable=too-many-instance-attributes
             resp, _ = await self.request(
                 method="post",
                 returns="response",
-                url=resp.url,
+                url=OAUTH_LOGIN_URI,
                 websession=session,
                 headers={
                     "Content-Type": "application/x-www-form-urlencoded",
